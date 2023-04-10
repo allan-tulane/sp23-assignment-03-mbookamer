@@ -43,6 +43,13 @@ def parens_match_iterative(mylist):
     False
     """
     ### TODO
+    set = iterate(parens_update, 1, mylist) #we want to iterate over our entire list, starting with the first element and then complete the iteration
+    #until we are left with a single element. if we do not have a single element,then we know the parentheses are NOT balanced
+    
+    if set == 1:
+        return True #if there is only 1 item, then it is by definition balanced
+    else:
+        return False #there was some parantheses not balanced
     pass
 
 
@@ -59,6 +66,18 @@ def parens_update(current_output, next_input):
       the updated value of `current_output`
     """
     ###TODO
+    
+    if next_input == '(':
+        return current_output + 1 #we designate this as the positive parenthesis for counting purposes
+    
+    elif next_input == ')':
+        if current_output > 1: #we do not want a list of size 0 because that means it is not balanced and we proceed to return False if that is the case
+            return current_output - 1 #we designate this as the negative parenthesis for counting purposes 
+        else:
+            return False
+        
+    return current_output #we want to return the output after we iterate through our entire list
+    
     pass
 
 
@@ -88,6 +107,16 @@ def parens_match_scan(mylist):
     
     """
     ###TODO
+    list_map = list(map(paren_map, mylist)) #mapping our list to the function paren_map
+    scan_map = scan(lambda x,y: x+y, 0, list_map) #we want to scan over our list created from our mapping in the previous line
+    scan_reduce = reduce(min_f, 0, scan_map[0]) #we want to call reduce over our mapped scan function in the previous line, calling the conventions 
+    #of reduce functions covered in lectures 
+    
+    if scan_reduce >= 0 and (scan_map[1] == 0): #we want to keep a running tally of what elements of the list we have already scanned and want the 
+        #the element located at position 1 to equal 0 because this means our net total of our list is 0, which indicates it is balanced (1-1+0-1+1=0)
+        return True
+    else:
+        return False
     pass
 
 def scan(f, id_, a):
@@ -161,6 +190,37 @@ def parens_match_dc_helper(mylist):
       parens_match_dc to return the final True or False value
     """
     ###TODO
+    
+    #we first need to state our base cases and then build up our recursive solution from there 
+    if len(mylist) == 0: #empty list 
+        return (0,0)
+    
+    if len(mylist) == 1: #composed of only ( or ) so we must distinguish what mylist contains
+        if mylist[0] == '(':
+            return (0,1)
+        elif mylist[0] == ')':
+            return (1,0)
+        else:
+            return (0,0) #this means we have an element that is neither ( or ), say an ASCII character 
+        
+     #recursive step
+    #we want to split our list into two halves to implement a divide and conquer approach
+    left = parens_match_dc_helper(mylist[(len(mylist)//2):])
+    right = parens_match_dc_helper(mylist[:(len(mylist)//2)])
+    
+    #we compute separate sums because we want to create tuples of our list and recursively go through these tuples until we reach the end of our list
+    sum_0 = left[0] + right[0]
+    sum_1 = left[1] + right[1]
+    
+    tuple = (sum_0, sum_1) #tuple with two consecutive sums from consecutive elements in both the left and right sides and we only want to have 2 elements 
+    #to compare 
+    left_new = tuple[1] - tuple[0]
+    right_new = tuple[0] - tuple[1]
+    
+    if tuple[0] >= tuple[1]: #if the left is greater than the right then we want this sum to be our new left value 
+        return (left_new, 0)
+    else:
+        return (0, right_new)
     pass
     
 
